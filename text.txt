@@ -1,0 +1,3 @@
+s1: Merhaba
+s2: NAıslısn
+s3: Ne yazdım lan ben

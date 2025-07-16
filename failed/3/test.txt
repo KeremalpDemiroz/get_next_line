@@ -1,0 +1,3 @@
+satır 1: merhaba
+satır 2: naber
+satırr 3: son satır
