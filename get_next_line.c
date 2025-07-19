@@ -5,50 +5,33 @@ int	ft_strlen(char *str)
 	int	i;
 
 	i = 0;
+	if (!str)
+		return (0);
 	while (str[i])
 		i++;
 	return (i);
 }
 
-char	*ft_strdup(char *str)
+void	*ft_calloc(size_t nmemb, size_t size)
 {
-	char	*dup;
-	int		i;
+	void			*tmp;
+	int				i;
 
-	i = -1;
-	dup = malloc(ft_strlen(str) + 1);
-	if (!dup)
+	i = 0;
+	tmp = malloc(nmemb * size);
+	if (!tmp)
 		return (NULL);
-	while (str[++i])
-		dup[i] = str[i];
-	dup[i] = '\0';
-	return (dup);
-}
-
-char	*ft_strjoin(char *excess, char *buffer)
-{
-	char	*join;
-	int		i;
-	int		j;
-
-	i = -1;
-	j = -1;
-	join = malloc(ft_strlen(excess) + ft_strlen(buffer) + 1);
-	if (!join)
-		return (NULL);
-	while (excess[++i])
-		join[i] = excess[i];
-	while (buffer[++j])
-		join[i+ j] = buffer[j];
-	join[i + j] = '\0';
-	free(excess);
-	return (join);
+	while (i < nmemb * size)
+	{
+		((unsigned char *)tmp)[i] = 0;
+		i++;
+	}
+	return (tmp);
 }
 
 int	find_newline(char *str)
 {
 	int	i;
-
 	i = 0;
 	while (str[i])
 	{
@@ -59,148 +42,152 @@ int	find_newline(char *str)
 	return (-1);
 }
 
-char	*read_file(int fd, char *excess)
+char	*ft_strdup(char *str)
+{
+	char	*dup;
+	int		size;
+	int		i;
+
+	i = 0;
+	if (!str)
+		size = 0;
+	else
+		size = ft_strlen(str);
+	dup = ft_calloc(size + 1, sizeof(char));
+	if (!dup)
+		return (NULL);
+	while (str[i])
+	{
+		dup[i] = str[i];
+		i++; 
+	}
+	dup[i] = '\0';
+	return (dup);
+}
+
+char	*ft_strjoin(char *storage, char *buffer)
+{
+	char	*join;
+	int		i;
+	int		j;
+
+	i = 0;
+	j = 0;
+	if (!storage || !buffer)
+		return (ft_strdup(""));
+	join = ft_calloc(ft_strlen(storage) + ft_strlen(buffer) + 1, sizeof(char));
+	if (!join)
+		return (NULL);
+	while (storage[i])
+	{
+		join[i] = storage[i];
+		i++;
+	}
+	while (buffer[j])
+	{
+		join[i + j] = buffer[j];
+		j++;
+	}
+	join[i + j] = '\0';
+	free((void *)storage);
+	return (join);
+}
+
+char	*ft_range(char *storage, int start, int end, int flag)
+{
+	char	*range;
+	int		i;
+
+	i = 0;
+	range = ft_calloc(end - start + 2, sizeof(char));
+	if (!range)
+		return (NULL);
+	while (start <= end)
+	{
+		range[i] = storage[start];
+		start++;
+		i++;
+	}
+	range[i] = '\0';
+	if (flag)
+		free(storage);
+	return (range);
+}
+//merhaba\n\n\n    merhaba\n    \n\n   
+
+
+char	*read_file(int fd, char *storage)
 {
 	char	*buffer;
 	ssize_t	count;
-
 	count = 1;
-	buffer = malloc(sizeof(char) * BUFFER_SIZE + 1);
+	buffer = ft_calloc(BUFFER_SIZE + 1, sizeof(char));
 	if (!buffer)
 		return (NULL);
-	while (find_newline(excess) < 0 && count > 0)
+	while (find_newline(storage) < 0 && count > 0)
 	{
 		count = read(fd, buffer, BUFFER_SIZE);
 		if (count == -1)
 		{
-			free(excess);
-			excess = NULL;
-			break ;
+			free (buffer);
+			storage = NULL;
+			return (NULL);
 		}
 		buffer[count] = '\0';
-		excess = ft_strjoin(excess, buffer);
+		storage = ft_strjoin(storage, buffer);
 	}
 	free(buffer);
-	if (count == 0 && !excess)
-		return (NULL);
-	return (excess);
+	return (storage);
 }
 
-char	*ft_range_and_free(char *excess, int start, int end, int flag)
+char	*get_next_line(int fd)
 {
-	char	*res;
-	int		i;
-
-	i = 0;
-	res = malloc(end - start + 1);
-	if (!res)
-		return (NULL);
-	while (start < end)
-	{
-		res[i] = excess[start];
-		start++;
-	}
-	res[start] = '\0';
-	if (flag)
-	{
-		free(excess);
-		excess = NULL;
-	}
-	return (res);
-}
-
-// char	*line_and_excess(char  **excess)
-// {
-// 	char	*res;
-// 	char	*tmp;
-// 	int		i;
-// 	int		j;
-
-// 	i = 0;
-// 	j = -1;
-// 	tmp = *excess;
-// 	while (tmp[i] != '\n')
-// 		i++;
-// 	res = malloc(i + 2);
-// 	if(!res)
-// 		return (NULL);
-// 	while (++j <= i)
-// 		res[j] = tmp[j];
-// 	res[j] = '\0';
-// 	*excess = ft_strdup(tmp + i+1);
-// 	free(tmp);
-// 	return (res);
-// }
-
-char	*get_next_line(int  fd)
-{
-	static char	*excess;
-	int			index;
+	static char	*storage;
 	char		*line;
+	int			index;
 
 	if (BUFFER_SIZE <= 0 || fd < 0)
 		return (NULL);
-	if (!excess)
-		excess = ft_strdup("");
-	excess = read_file(fd, excess);
-	if (!excess || excess[0] == '\0')
+	if (!storage)
+		storage = ft_strdup("");
+	storage = read_file(fd, storage);
+	index = find_newline(storage);
+	if (index == -1)
 	{
-		free(excess);
-		excess = NULL;
-		return (NULL);
-	}
-	index = find_newline(excess);
-	if (index != -1)
-	{
-		// line = line_and_excess(&excess);
-		line = ft_range_and_free(excess, 0, index, 0);
-		excess = ft_range_and_free(excess, index + 1, ft_strlen(excess), 1);
+		if (*storage == '\0')
+			return (NULL);
+		line = storage;
+		storage = NULL;
 		return (line);
 	}
 	else
 	{
-		printf("excess : %s\n", excess);
-		return (excess);
+		line = ft_range(storage, 0, index, 0);
+		storage = ft_range(storage, index +1, ft_strlen(storage),1);
+		return (line);
 	}
 }
-
 int main()
 {
-    int     fd;
-    char    *line;
-    int     line_count;
+	char *line;
 
-    // --- Dosya Tanımlayıcısını (fd) Belirleme --//
-        // Komut satırından bir dosya adı verildi, onu açalım.
-        fd = open("test.txt", O_RDONLY);
-        if (fd == -1)
-        {
-            perror("Dosya açma hatası");
-            return (1);
-        }
-        printf("--- '%s' dosyasından okunuyor ---\n", "test.txt");
-    // --- get_next_line'ı Döngüde Çağırma ---
-    line_count = 1;
-    while (1)
-    {
-        line = get_next_line(fd);
-        if (line == NULL)
-        {
-            printf("\n--- Okuma bitti (get_next_line NULL döndürdü) ---\n");
-            break; // Döngüden çık
-        }
-
-        // Okunan satırı ve satır numarasını yazdır
-        printf("Satir %d: -%s-\n", line_count, line);
-        free(line);
-        // GNL'den dönen ve malloc ile ayrılmış olan satırı serbest bırak
-        line_count++;
-    }
-
-    // Eğer bir dosya açtıysak, kapatmayı unutmayalım.
-    if (fd > 0)
-    {
-        close(fd);
-    }
-    return (0);
+	int fd = open("test.txt", O_RDONLY);
+	if (fd == -1)
+	{
+		printf("dosya okunamadi");
+		return (0);
+	}
+	while(1)
+	{
+		line = get_next_line(fd);
+		printf("%s", line);
+		if (line && line[0] == '\n')
+			printf("empty");
+		if (!line)
+			return (0);
+		free(line);
+	}
+	free(line);
+	close(fd);
+	return (0);
 }
