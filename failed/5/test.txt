@@ -1,0 +1,6 @@
+ft_strlen +
+free_all(buffer, excess, line)+
+ft_strjoin(excess, buffer)+
+ft_strdup+
+ft_range(excess, 0, index, 0?)
+ft_strchr
