@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: kedemiro <kedemiro@student.42istanbul.com. +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/21 11:35:41 by kedemiro          #+#    #+#             */
-/*   Updated: 2025/07/21 20:46:30 by kedemiro         ###   ########.fr       */
+/*   Created: 2025/07/21 16:16:52 by kedemiro          #+#    #+#             */
+/*   Updated: 2025/07/21 20:48:14 by kedemiro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 static int	find_newline(char *str)
 {
@@ -57,17 +57,17 @@ static char	*read_file(int fd, char *storage)
 
 char	*get_next_line(int fd)
 {
-	static char	*storage;
+	static char	*storage[2048];
 	char		*line;
 	int			index;
 
-	if (BUFFER_SIZE <= 0 || fd < 0 || !(storage = read_file(fd, storage)))
+	if (BUFFER_SIZE <= 0 || fd < 0 || !(storage[fd] = read_file(fd, storage[fd])))
 		return (NULL);
-	index = find_newline(storage);
+	index = find_newline(storage[fd]);
 	if (index == -1)
 	{
-		line = storage;
-		storage = NULL;
+		line = storage[fd];
+		storage[fd] = NULL;
 		if (*line == '\0')
 		{
 			free(line);
@@ -77,8 +77,8 @@ char	*get_next_line(int fd)
 	}
 	else
 	{
-		line = ft_range(storage, 0, index, 0);
-		storage = ft_range(storage, index + 1, ft_strlen(storage), 1);
+		line = ft_range(storage[fd], 0, index, 0);
+		storage[fd] = ft_range(storage[fd], index + 1, ft_strlen(storage[fd]), 1);
 		return (line);
 	}
 }
