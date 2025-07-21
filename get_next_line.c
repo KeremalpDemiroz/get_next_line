@@ -6,7 +6,7 @@
 /*   By: kedemiro <kedemiro@student.42istanbul.com. +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/21 11:35:41 by kedemiro          #+#    #+#             */
-/*   Updated: 2025/07/21 20:46:30 by kedemiro         ###   ########.fr       */
+/*   Updated: 2025/07/21 21:04:32 by kedemiro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,10 @@ char	*get_next_line(int fd)
 	char		*line;
 	int			index;
 
-	if (BUFFER_SIZE <= 0 || fd < 0 || !(storage = read_file(fd, storage)))
+	if (BUFFER_SIZE <= 0 || fd < 0)
+		return (NULL);
+	storage = read_file(fd, storage);
+	if (!storage)
 		return (NULL);
 	index = find_newline(storage);
 	if (index == -1)
@@ -69,10 +72,7 @@ char	*get_next_line(int fd)
 		line = storage;
 		storage = NULL;
 		if (*line == '\0')
-		{
-			free(line);
-			return (NULL);
-		}
+			return (free(line), NULL);
 		return (line);
 	}
 	else
